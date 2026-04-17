@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HACKINGCARPETS *NSC</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 30% 20%, #0a1a1f, #020508);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      width: 1100px;
+      max-width: 100%;
+      background: rgba(0, 20, 25, 0.85);
+      backdrop-filter: blur(8px);
+      border: 2px solid #0ff;
+      box-shadow: 0 0 40px #0ff6, inset 0 0 15px #0ff3;
+      border-radius: 32px;
+      padding: 24px 22px 32px;
+      color: #bdf2ff;
+      transition: all 0.3s;
+    }
+
+    .game-container.volume2 { border: 3px solid #ff8c00; box-shadow: 0 0 50px #ff8c00aa, inset 0 0 20px #ffa500; background: rgba(30, 20, 10, 0.9); }
+    .game-container.crono-mode { border: 3px solid #ff3366; box-shadow: 0 0 50px #ff3366aa, inset 0 0 20px #ff6699; background: rgba(20, 5, 15, 0.9); }
+    .game-container.quiz-mode { border: 3px solid #00ffcc; box-shadow: 0 0 50px #00ffccaa, inset 0 0 20px #00ffff; background: rgba(5, 20, 25, 0.95); }
+    .game-container.create-mode { border: 3px solid #ff00ff; box-shadow: 0 0 50px #ff00ffaa, inset 0 0 20px #ff66ff; background: rgba(25, 5, 30, 0.95); }
+    .game-container.runner-mode { border: 3px solid #ffd700; box-shadow: 0 0 50px #ffd700aa, inset 0 0 20px #ffaa00; background: linear-gradient(135deg, #1a0a2e, #0a1a2e); }
+
+    .screen { display: none; }
+    .active-screen { display: block; }
+
+    h1, h2, h3 {
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+    }
+
+    .input-group { margin: 22px 0; }
+    label { display: block; font-size: 1.3rem; margin-bottom: 8px; color: #9effcf; }
+    input {
+      width: 100%; padding: 14px 18px; background: #0b1f26;
+      border: 2px solid #2ef7d3; border-radius: 30px; font-size: 1.3rem;
+      color: #e6ffff; font-weight: bold; box-shadow: inset 0 0 12px #000, 0 0 12px #0ff;
+    }
+
+    .btn {
+      background: #0a1f28; border: 2px solid #0ff; color: #d0f5ff;
+      padding: 12px 26px; font-size: 1.3rem; font-weight: bold;
+      text-transform: uppercase; border-radius: 40px; cursor: pointer;
+      box-shadow: 0 0 18px #0ff, inset 0 0 8px #0ff;
+      letter-spacing: 2px; margin: 8px 10px 8px 0; transition: 0.2s;
+    }
+    .btn:hover { background: #0e3a48; border-color: #ffb347; box-shadow: 0 0 30px #ffb347; color: #fff5d0; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+    .hacker-header {
+      display: flex; justify-content: space-between; background: #03161ecc;
+      padding: 12px 25px; border-radius: 50px; border: 1px solid #0ff; margin-bottom: 25px;
+    }
+    .badge {
+      font-size: 1.4rem; background: #000e12; padding: 6px 22px;
+      border-radius: 40px; box-shadow: inset 0 0 6px #0f0, 0 0 15px cyan;
+    }
+
+    .decrypt-area, .quiz-area, .create-area {
+      background: #042029; border-radius: 30px; padding: 20px;
+      border: 2px solid #6ef5d0; margin: 20px 0;
+    }
+
+    .attempts-info {
+      background: #1a0a0a; border: 2px solid #ff4444; border-radius: 20px;
+      padding: 15px; margin: 15px 0; text-align: center;
+      color: #ffaaaa; font-size: 1.3rem;
+    }
+
+    .code-box {
+      font-size: 4rem; text-align: center; background: #010d12; padding: 20px;
+      border-radius: 25px; letter-spacing: 12px; color: #ffea9f;
+      text-shadow: 0 0 30px #fc0; border: 2px dashed #0ff;
+    }
+
+    .timer { font-size: 2.5rem; color: #ffb56b; }
+
+    .runner-canvas-container {
+      background: #0a0a1a; border-radius: 20px; padding: 20px;
+      border: 3px solid #ffd700; margin: 20px 0; text-align: center;
+    }
+    #runnerCanvas {
+      background: linear-gradient(180deg, #1a0a2e 0%, #2a1a4e 100%);
+      border-radius: 15px; display: block; margin: 0 auto;
+      border: 2px solid #ffaa00; width: 100%; max-width: 800px; height: 300px;
+    }
+
+    .file-explorer { background: #0a1c26cc; border-radius: 24px; padding: 20px; border: 2px solid #2ad4ff; margin: 15px 0; }
+    .explorer-header { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .path-bar { background: #02161c; border: 2px solid #0ff; border-radius: 30px; padding: 10px 20px; flex: 1; font-size: 1.2rem; color: #b0ffee; }
+    .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; max-height: 350px; overflow-y: auto; padding: 8px 4px; }
+    .folder-item, .file-item {
+      background: #12343f; border: 2px solid #2ef7d3; border-radius: 18px;
+      padding: 15px 4px; text-align: center; font-size: 1.1rem; font-weight: bold;
+      color: #dbfff0; cursor: pointer; box-shadow: 0 0 8px #1effbc; word-break: break-word;
+    }
+    .folder-item:hover, .file-item:hover { background: #1f5a6b; border-color: #ffdb7c; box-shadow: 0 0 22px #fd0; }
+
+    .quiz-option {
+      background: #0a2a35; border: 2px solid #00ffcc; border-radius: 20px;
+      padding: 18px 20px; margin: 12px 0; font-size: 1.3rem; cursor: pointer;
+    }
+    .quiz-option.selected { background: #1a5a4a; border-color: #aaffaa; box-shadow: 0 0 30px #00ff88; }
+
+    .mission-text { background: #051e1e; padding: 15px 20px; border-radius: 20px; border-left: 12px solid #0ff; margin: 15px 0; font-size: 1.2rem; }
+    .create-mode .mission-text { border-left-color: #ff66ff; background: #1e0525; }
+    .route-highlight { background: #0a2a2a; padding: 15px; border-radius: 15px; font-family: monospace; font-size: 1.3rem; color: #aaffaa; border: 1px dashed #0ff; margin: 10px 0; }
+
+    /* CRÉDITOS ESTILO STAR WARS */
+    .credits-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; z-index: 1000; overflow: hidden;
+      perspective: 400px; display: flex; justify-content: center;
+    }
+    .crawl {
+      position: relative; top: 100%; width: 80%; max-width: 900px;
+      color: #ffd700; font-size: 2rem; font-weight: bold;
+      text-align: center; animation: crawl 30s linear forwards;
+      transform-origin: 50% 100%; text-shadow: 0 0 20px #ffaa00;
+    }
+    @keyframes crawl {
+      0% { top: 100%; transform: rotateX(20deg) translateZ(0); opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: -250%; transform: rotateX(25deg) translateZ(-100px); opacity: 0; }
+    }
+    .crawl-content { text-align: center; }
+    .crawl h1 { color: #00ffff; font-size: 3.5rem; text-shadow: 0 0 30px #0ff; border: none; margin-bottom: 30px; }
+    .crawl h2 { color: #ff66ff; font-size: 2.5rem; text-shadow: 0 0 20px #ff00ff; margin: 20px 0; }
+    .crawl p { margin: 25px 0; line-height: 1.6; }
+    .crawl .highlight { color: #ffd700; font-size: 2.8rem; text-shadow: 0 0 30px #ffaa00; }
+    
+    .final-message-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1001; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; pointer-events: none;
+      opacity: 0; animation: showFinalMessage 3s ease-in-out 30s forwards;
+    }
+    @keyframes showFinalMessage {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    .final-message-box {
+      background: rgba(0, 20, 30, 0.9); border: 4px solid #00ffff;
+      border-radius: 40px; padding: 40px 60px; text-align: center;
+      box-shadow: 0 0 100px #00ffff, inset 0 0 40px #00ffff66;
+      backdrop-filter: blur(10px); margin-bottom: 30px;
+    }
+    .final-message-box h1 {
+      color: #ffd700; font-size: 4rem; text-shadow: 0 0 40px #ffaa00;
+      border: none; margin-bottom: 20px;
+    }
+    .final-message-box p {
+      color: #ffffff; font-size: 2.5rem; text-shadow: 0 0 20px #0ff;
+    }
+    .hacker-code-lines {
+      position: absolute; bottom: 0; left: 0; width: 100%;
+      font-family: monospace; font-size: 1rem; color: #00ff8844;
+      pointer-events: none; white-space: pre; overflow: hidden;
+      animation: scrollCode 10s linear infinite;
+    }
+    @keyframes scrollCode {
+      0% { transform: translateY(100%); }
+      100% { transform: translateY(-100%); }
+    }
+
+    .fail-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000000dd; backdrop-filter: blur(8px); display: flex;
+      justify-content: center; align-items: center; z-index: 500;
+    }
+    .fail-card {
+      background: #1a0000; border: 4px solid #ff0000; padding: 40px 60px;
+      border-radius: 40px; box-shadow: 0 0 80px #ff0000; text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="game-container" id="mainContainer">
+  <div id="welcomeScreen" class="screen active-screen">
+    <h1>◈ ROOT://INIT ◈</h1>
+    <p style="font-size:1.4rem;">[>_ REGISTRO DE AGENTE]</p>
+    <div class="input-group">
+      <label>👤 NOMBRE COMPLETO</label>
+      <input type="text" id="playerName" placeholder="Ej: NEO ANDERSON" value="ESTUDIANTE">
+    </div>
+    <div class="input-group">
+      <label>📚 GRADO / RANGO</label>
+      <input type="text" id="playerGrade" placeholder="Ej: 4TO PRIMARIA" value="4TO PRIMARIA">
+    </div>
+    <button class="btn" id="registerBtn">▶ INICIAR SECUENCIA</button>
+  </div>
+
+  <div id="gameScreen" class="screen">
+    <div class="hacker-header">
+      <span class="badge" id="displayName">...</span>
+      <span class="badge" id="displayGrade">...</span>
+      <span class="badge" id="scoreDisplay">🔷 0 PTS</span>
+    </div>
+    
+    <div id="roundsPanel"></div>
+    <div id="quizPanel" style="display: none;"></div>
+    <div id="createPanel" style="display: none;"></div>
+    <div id="runnerPanel" style="display: none;"></div>
+
+    <div id="explorerSection" style="display: none;">
+      <h2 id="explorerTitle">📁 EXPLORADOR</h2>
+      <div id="cronoTimerDisplay" style="display: none; text-align: center; margin-bottom: 15px;">
+        <span class="crono-timer" id="cronoTimer" style="font-size:2.5rem; color:#ff6699;">⏱️ 01:00</span>
+      </div>
+      <div class="file-explorer">
+        <div class="explorer-header">
+          <button class="btn small" id="backBtn">↩ ATRÁS</button>
+          <button class="btn small" id="forwardBtn">↪ ADELANTE</button>
+          <div class="path-bar" id="currentPath">C:\root\</div>
+          <button class="btn small" id="resetExplorerBtn">⟲ RAÍZ</button>
+        </div>
+        <div id="folderContainer" class="folder-grid"></div>
+        <div id="explorerMessage" style="margin-top:20px; font-size:1.5rem; min-height:50px;"></div>
+      </div>
+      <div class="mission-text" id="missionBox">
+        <strong>🎯 INSTRUCCIONES:</strong>
+        <div id="routeDisplay" class="route-highlight">Cargando ruta...</div>
+        <span id="missionTarget"></span>
+      </div>
+      <div id="createFolderControls" style="display: none;" class="create-controls" style="margin-top:20px;">
+        <input type="text" id="newFolderNameInput" placeholder="Nombre de nueva carpeta" style="flex:1; padding:15px;">
+        <button class="btn" id="createFolderBtn">📁 CREAR CARPETA</button>
+      </div>
+    </div>
+
+    <div id="continueDiv" style="display: none; margin: 25px 0;">
+      <button class="btn" id="nextLevelBtn">⏩ CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- CRÉDITOS FINALES NSC -->
+<div id="creditsScreen" style="display: none;" class="credits-overlay">
+  <div class="crawl" id="crawlText">
+    <div class="crawl-content">
+      <h1>CRÉDITOS FINALES</h1>
+      <p>...</p>
+      <h2>MINIJUEGO EDUCATIVO</h2>
+      <p>Realizado en:</p>
+      <p style="font-size:2.5rem;">Colegio NSC</p>
+      <p>Laboratorio de Computación</p>
+      <p>...</p>
+      <h2>Creación del minijuego:</h2>
+      <p style="font-size:2.8rem; color:#00ffff;">Profesor JP</p>
+      <p>(Diseño, programación y desarrollo completo con IA)</p>
+      <p>...</p>
+      <h2>Agradecimiento especial a:</h2>
+      <p style="font-size:2.5rem;">Estudiantes de Cuarto Primaria</p>
+      <p>por jugar, probar y disfrutar el juego</p>
+      <p>...</p>
+      <p style="font-size:2rem;">¡Gracias por participar!</p>
+      <p>Esperamos que te hayas divertido</p>
+      <p>...</p>
+      <p style="font-size:2.5rem;">Colegio NSC</p>
+      <p>Laboratorio de Computación</p>
+      <p>...</p>
+      <p>...</p>
+      <p class="highlight" id="creditNameFinal">AGENTE</p>
+      <p>Rango: <span id="creditGradeFinal">---</span></p>
+      <p>Puntuación Final: <span id="creditScoreFinal">0</span></p>
+      <p>...</p>
+      <p>FIN</p>
+    </div>
+  </div>
+  <div class="final-message-container" id="finalMessageContainer">
+    <div class="final-message-box">
+      <h1>🏆 ¡FELICIDADES! 🏆</h1>
+      <p id="finalPlayerName"></p>
+      <p id="finalPlayerGrade"></p>
+      <p id="finalPlayerScore"></p>
+    </div>
+  </div>
+  <div class="hacker-code-lines" id="hackerCodeLines"></div>
+</div>
+
+<!-- MODAL DE FALLO -->
+<div id="failModal" style="display: none;" class="fail-overlay">
+  <div class="fail-card">
+    <h1 style="color:#ff4444; font-size:3rem;">❌ ACCESO DENEGADO ❌</h1>
+    <p style="color:#ffaaaa; font-size:1.8rem; margin:20px 0;">Has fallado las 3 rondas de código</p>
+    <p style="color:#ffcccc; margin-bottom:30px;">Debes reiniciar la secuencia desde el principio</p>
+    <button class="btn" id="restartFromFailBtn">🔄 REINTENTAR</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  let player = { fullName: '', grade: '' };
+  let score = 0;
+  let round = 1;
+  const TOTAL_ROUNDS = 3;
+  let currentRoundData = null;
+  let roundTimer = null, timeLeft = 0, roundActive = false;
+  let roundsCompleted = false;
+  let attemptsLeft = 3;
+  
+  let currentMode = 'volume1';
+  let explorerLevel = 1;
+  const MAX_LEVEL_VOL1 = 3;
+  const MAX_LEVEL_VOL2 = 5;
+  
+  let fileSystem = null;
+  let currentFolderId = 'root';
+  let historyStack = [], historyIndex = -1;
+  let targetItemName = 'JUEGOS';
+  let targetPathIds = [];
+  let levelCompleted = false;
+  
+  let cronoTimer = null, cronoTimeLeft = 60, cronoActive = false;
+  
+  let quizQuestions = [];
+  let currentQuizIndex = 0;
+  let quizScore = 0;
+  let selectedAnswer = null;
+  
+  let createLevel = 1;
+  const MAX_CREATE_LEVEL = 4;
+  let createTargetName = '';
+  let createFolderCreated = false;
+  let createTargetPath = '';
+  
+  let runnerCompleted = false;
+  
+  const mainContainer = document.getElementById('mainContainer');
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const registerBtn = document.getElementById('registerBtn');
+  const playerNameInput = document.getElementById('playerName');
+  const playerGradeInput = document.getElementById('playerGrade');
+  const displayName = document.getElementById('displayName');
+  const displayGrade = document.getElementById('displayGrade');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const roundsPanel = document.getElementById('roundsPanel');
+  const quizPanel = document.getElementById('quizPanel');
+  const runnerPanel = document.getElementById('runnerPanel');
+  const explorerSection = document.getElementById('explorerSection');
+  const continueDiv = document.getElementById('continueDiv');
+  const nextLevelBtn = document.getElementById('nextLevelBtn');
+  const explorerTitle = document.getElementById('explorerTitle');
+  const folderContainer = document.getElementById('folderContainer');
+  const currentPathSpan = document.getElementById('currentPath');
+  const backBtn = document.getElementById('backBtn');
+  const forwardBtn = document.getElementById('forwardBtn');
+  const resetExplorerBtn = document.getElementById('resetExplorerBtn');
+  const explorerMessage = document.getElementById('explorerMessage');
+  const missionTargetSpan = document.getElementById('missionTarget');
+  const routeDisplay = document.getElementById('routeDisplay');
+  const cronoTimerDisplay = document.getElementById('cronoTimerDisplay');
+  const cronoTimerSpan = document.getElementById('cronoTimer');
+  const createFolderControls = document.getElementById('createFolderControls');
+  const newFolderNameInput = document.getElementById('newFolderNameInput');
+  const createFolderBtn = document.getElementById('createFolderBtn');
+  const creditsScreen = document.getElementById('creditsScreen');
+  const creditNameFinal = document.getElementById('creditNameFinal');
+  const creditGradeFinal = document.getElementById('creditGradeFinal');
+  const creditScoreFinal = document.getElementById('creditScoreFinal');
+  const finalPlayerName = document.getElementById('finalPlayerName');
+  const finalPlayerGrade = document.getElementById('finalPlayerGrade');
+  const finalPlayerScore = document.getElementById('finalPlayerScore');
+  const hackerCodeLines = document.getElementById('hackerCodeLines');
+  const failModal = document.getElementById('failModal');
+  const restartFromFailBtn = document.getElementById('restartFromFailBtn');
+
+  function updateUI() {
+    displayName.textContent = `👤 ${player.fullName || 'ANON'}`;
+    displayGrade.textContent = `📚 ${player.grade || 'N/A'}`;
+    scoreDisplay.textContent = `🔷 ${score} PTS`;
+  }
+
+  registerBtn.addEventListener('click', () => {
+    const name = playerNameInput.value.trim();
+    const grade = playerGradeInput.value.trim();
+    if(!name||!grade) { alert('Completa todos los campos'); return; }
+    player.fullName = name; player.grade = grade;
+    updateUI();
+    welcomeScreen.classList.remove('active-screen');
+    gameScreen.classList.add('active-screen');
+    startRoundAttempt();
+  });
+
+  function startRoundAttempt() {
+    round = 1;
+    roundsCompleted = false;
+    attemptsLeft = 3;
+    startRound(1);
+  }
+
+  function generateCode(len=6) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789!@#$%';
+    return Array.from({length:len},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  }
+
+  function startRound(r) {
+    if(r > TOTAL_ROUNDS) {
+      roundsCompleted = true;
+      finishRounds();
+      return;
+    }
+    round = r;
+    const code = generateCode(6);
+    timeLeft = Math.max(8, 16 - r*2);
+    currentRoundData = { code, roundNumber: r };
+    roundActive = true;
+    renderRoundPanel();
+    startTimer();
+  }
+
+  function renderRoundPanel() {
+    const d = currentRoundData;
+    roundsPanel.innerHTML = `
+      <div class="decrypt-area">
+        <h3>🔐 RONDA ${d.roundNumber}/${TOTAL_ROUNDS} · DECODIFICA</h3>
+        <div class="attempts-info">
+          ⚠️ INTENTOS RESTANTES: ${attemptsLeft} · SI FALLAS, REINICIARÁS LAS 3 RONDAS
+        </div>
+        <div class="code-box">${d.code}</div>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <input type="text" id="answerInput" placeholder="ESCRIBE EL CÓDIGO" style="width:280px; font-size:1.6rem; text-align:center;">
+          <button class="btn" id="submitAnswerBtn">✔ VALIDAR</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:18px;">
+          <span class="timer" id="timerDisplay">⏳ ${timeLeft}s</span>
+          <span>💾 +50 PTS</span>
+        </div>
+        <div id="roundFeedback" style="margin-top:12px;"></div>
+      </div>
+    `;
+    document.getElementById('submitAnswerBtn').addEventListener('click', checkAnswer);
+    document.getElementById('answerInput').addEventListener('keypress', e=> e.key==='Enter'&&checkAnswer());
+  }
+
+  function startTimer() {
+    clearInterval(roundTimer);
+    roundTimer = setInterval(() => {
+      if(!roundActive) return;
+      timeLeft--;
+      const ts = document.getElementById('timerDisplay');
+      if(ts) ts.textContent = `⏳ ${timeLeft}s`;
+      if(timeLeft<=0) {
+        clearInterval(roundTimer); roundActive=false;
+        handleRoundFailure('⌛ TIEMPO AGOTADO');
+      }
+    },1000);
+  }
+
+  function checkAnswer() {
+    if(!roundActive) return;
+    const input = document.getElementById('answerInput');
+    const fb = document.getElementById('roundFeedback');
+    if(input.value.trim().toUpperCase() === currentRoundData.code) {
+      clearInterval(roundTimer); roundActive=false;
+      score+=50; updateUI();
+      fb.innerHTML = '✅ CORRECTO +50';
+      proceedToNextRound();
+    } else {
+      handleRoundFailure('❌ CÓDIGO INCORRECTO');
+    }
+  }
+
+  function handleRoundFailure(message) {
+    clearInterval(roundTimer);
+    roundActive = false;
+    attemptsLeft--;
+    
+    if(attemptsLeft <= 0) {
+      roundsPanel.innerHTML = `
+        <div class="decrypt-area" style="border-color:#ff4444;">
+          <h3 style="color:#ff8888;">⛔ ACCESO DENEGADO ⛔</h3>
+          <p style="font-size:1.5rem; margin:20px 0;">Has agotado tus 3 intentos</p>
+          <p>No puedes continuar sin completar las 3 rondas</p>
+        </div>
+      `;
+      failModal.style.display = 'flex';
+    } else {
+      const fb = document.getElementById('roundFeedback');
+      if(fb) fb.innerHTML = `${message} · REINICIANDO RONDAS... (${attemptsLeft} intentos restantes)`;
+      setTimeout(() => {
+        round = 1;
+        startRound(1);
+      }, 1500);
+    }
+  }
+
+  function proceedToNextRound() {
+    setTimeout(()=> {
+      if(round < TOTAL_ROUNDS) startRound(round+1);
+      else {
+        roundsCompleted = true;
+        finishRounds();
+      }
+    },600);
+  }
+
+  function finishRounds() {
+    if(!roundsCompleted) return;
+    roundsPanel.innerHTML = `<div class="premio-box"><h2>🔓 ACCESO A DIRECTORIO DESBLOQUEADO</h2><p>Puntos: ${score}</p></div>`;
+    currentMode = 'volume1';
+    explorerLevel = 1;
+    updateContainerClass();
+    startVolumeLevel();
+    explorerSection.style.display = 'block';
+  }
+
+  restartFromFailBtn.addEventListener('click', () => {
+    failModal.style.display = 'none';
+    location.reload();
+  });
+
+  function updateContainerClass() {
+    mainContainer.classList.remove('volume2', 'crono-mode', 'quiz-mode', 'create-mode', 'runner-mode');
+    if(currentMode === 'volume2') mainContainer.classList.add('volume2');
+    if(currentMode === 'crono') mainContainer.classList.add('crono-mode');
+    if(currentMode === 'quiz') mainContainer.classList.add('quiz-mode');
+    if(currentMode === 'create') mainContainer.classList.add('create-mode');
+    if(currentMode === 'runner') mainContainer.classList.add('runner-mode');
+  }
+
+  function buildVolume1Level(level) {
+    const fs = { root: { id:'root', name:'root', children:[], type:'folder' } };
+    const folderCount = 25 + level*8;
+    const folders = [];
+    for(let i=0;i<folderCount;i++) {
+      let name = '#XR' + Math.floor(Math.random()*9000+1000);
+      const id = `f_${i}_${Date.now()}_${Math.random()}`;
+      fs[id] = { id, name, children:[], type:'folder' };
+      folders.push(id);
+    }
+    fs.root.children = folders.slice();
+    const depth = level;
+    let parentId = folders[Math.floor(Math.random()*folders.length)];
+    let currentParent = parentId;
+    const pathIds = [parentId];
+    for(let d=1; d<depth; d++) {
+      const subId = `sub_${d}_${Date.now()}_${Math.random()}`;
+      const subName = '#HUB' + Math.floor(Math.random()*900+100);
+      fs[subId] = { id:subId, name:subName, children:[], type:'folder' };
+      fs[currentParent].children.push(subId);
+      currentParent = subId;
+      pathIds.push(subId);
+    }
+    const targetId = 'target_juegos_' + level;
+    fs[targetId] = { id: targetId, name: 'JUEGOS', children:[], type:'folder' };
+    fs[currentParent].children.push(targetId);
+    pathIds.push(targetId);
+    return { fs, targetPath: pathIds, targetId };
+  }
+
+  function buildVolume2Level(level) {
+    const fs = { root: { id:'root', name:'root', children:[], type:'folder' } };
+    const depth = 4 + level;
+    let currentId = 'root';
+    let pathIds = [];
+    for(let d=0; d<depth; d++) {
+      const folderId = `deep_${d}_${Date.now()}_${Math.random()}`;
+      const folderName = (d%2===0) ? `SYS_${Math.random().toString(36).substring(2,6).toUpperCase()}` : `DIR_${Math.floor(Math.random()*9000+1000)}`;
+      fs[folderId] = { id:folderId, name:folderName, children:[], type:'folder' };
+      fs[currentId].children.push(folderId);
+      currentId = folderId;
+      pathIds.push(folderId);
+    }
+    for(let i=0;i<20+level*5;i++) {
+      const extraId = `extra_${i}_${Date.now()}`;
+      fs[extraId] = { id:extraId, name: `#${Math.floor(Math.random()*9999)}`, children:[], type:'folder' };
+      const randomParent = pathIds[Math.floor(Math.random()*pathIds.length)] || 'root';
+      fs[randomParent].children.push(extraId);
+    }
+    const finalFolderId = `final_${level}`;
+    fs[finalFolderId] = { id:finalFolderId, name: 'GALERIA', children:[], type:'folder' };
+    fs[currentId].children.push(finalFolderId);
+    pathIds.push(finalFolderId);
+    const files = [
+      { id: 'img1_'+level, name: 'vacaciones.jpg', type:'file' },
+      { id: 'img2_'+level, name: 'musica.mp3', type:'file' },
+      { id: 'img3_'+level, name: 'captura.png', type:'file' },
+      { id: 'target_foto', name: 'Foto.png', type:'file' },
+      { id: 'img4_'+level, name: 'nota.txt', type:'file' },
+      { id: 'img5_'+level, name: 'backup.jpg', type:'file' }
+    ];
+    files.forEach(f => { fs[f.id] = f; fs[finalFolderId].children.push(f.id); });
+    return { fs, targetPath: [...pathIds, 'target_foto'], targetId: 'target_foto' };
+  }
+
+  function buildCronoLevel() {
+    const fs = { root: { id:'root', name:'root', children:[], type:'folder' } };
+    function createDeepStructure(parentId, depth, maxDepth) {
+      if(depth >= maxDepth) return;
+      const numFolders = 3 + Math.floor(Math.random() * 4);
+      for(let i=0; i<numFolders; i++) {
+        const folderId = `d${depth}_${i}_${Date.now()}_${Math.random()}`;
+        const folderName = `DIR_${Math.random().toString(36).substring(2,6).toUpperCase()}_${Math.floor(Math.random()*1000)}`;
+        fs[folderId] = { id:folderId, name:folderName, children:[], type:'folder' };
+        fs[parentId].children.push(folderId);
+        if(Math.random() > 0.3) createDeepStructure(folderId, depth+1, maxDepth);
+        if(Math.random() > 0.5) {
+          const fileTypes = ['.txt', '.jpg', '.png', '.mp3', '.doc', '.exe'];
+          const fileId = `file_${depth}_${i}_${Date.now()}`;
+          fs[fileId] = { id:fileId, name: `archivo_${Math.floor(Math.random()*100)}${fileTypes[Math.floor(Math.random()*fileTypes.length)]}`, type:'file' };
+          fs[folderId].children.push(fileId);
+        }
+      }
+    }
+    createDeepStructure('root', 0, 6);
+    const allFolderIds = Object.keys(fs).filter(id => fs[id].type === 'folder' && id !== 'root');
+    const targetParent = allFolderIds[Math.floor(Math.random() * allFolderIds.length)];
+    const pdfId = 'target_documento';
+    fs[pdfId] = { id: pdfId, name: 'DOCUMENTO_SECRETO.pdf', type: 'file' };
+    fs[targetParent].children.push(pdfId);
+    const pathIds = [];
+    let current = targetParent;
+    while(current && current !== 'root') {
+      pathIds.unshift(current);
+      current = Object.keys(fs).find(k => fs[k].children?.includes(current));
+    }
+    pathIds.push(pdfId);
+    return { fs, targetPath: pathIds, targetId: pdfId };
+  }
+
+  function buildCreateLevel() {
+    const fs = { root: { id:'root', name:'root', children:[], type:'folder' } };
+    const depth = 3 + createLevel;
+    let currentId = 'root';
+    let pathIds = [];
+    for(let d=0; d<depth; d++) {
+      const folderId = `create_${d}_${Date.now()}`;
+      const folderName = `DIR_${Math.random().toString(36).substring(2,8).toUpperCase()}`;
+      fs[folderId] = { id:folderId, name:folderName, children:[], type:'folder' };
+      fs[currentId].children.push(folderId);
+      currentId = folderId;
+      pathIds.push(folderId);
+    }
+    for(let i=0; i<15; i++) {
+      const extraId = `extra_create_${i}`;
+      fs[extraId] = { id:extraId, name: `#${Math.floor(Math.random()*9999)}`, children:[], type:'folder' };
+      const randomParent = pathIds[Math.floor(Math.random()*pathIds.length)] || 'root';
+      fs[randomParent].children.push(extraId);
+    }
+    return { fs, targetFolderId: currentId, pathIds };
+  }
+
+  function startVolumeLevel() {
+    let result;
+    if(currentMode === 'volume1') {
+      targetItemName = 'JUEGOS';
+      result = buildVolume1Level(explorerLevel);
+      explorerTitle.textContent = `📁 VOLUMEN 1 · NIVEL ${explorerLevel}/${MAX_LEVEL_VOL1}`;
+    } else if(currentMode === 'volume2') {
+      targetItemName = 'Foto.png';
+      result = buildVolume2Level(explorerLevel);
+      explorerTitle.textContent = `📁 VOLUMEN 2 · NIVEL ${explorerLevel}/${MAX_LEVEL_VOL2}`;
+    } else if(currentMode === 'crono') {
+      targetItemName = 'DOCUMENTO_SECRETO.pdf';
+      result = buildCronoLevel();
+      explorerTitle.textContent = `⏱️ DESAFÍO CRONO · 1 MINUTO`;
+      startCronoTimer();
+    } else if(currentMode === 'create') {
+      targetItemName = `NUEVA CARPETA: ${createTargetName}`;
+      result = buildCreateLevel();
+      explorerTitle.textContent = `📁 MODO CREACIÓN · NIVEL ${createLevel}/${MAX_CREATE_LEVEL}`;
+      createTargetPath = result.pathIds.map(id => result.fs[id].name).join(' → ');
+    }
+    
+    fileSystem = result.fs;
+    if(currentMode !== 'create') targetPathIds = result.targetPath;
+    else targetPathIds = [result.targetFolderId];
+    
+    currentFolderId = 'root';
+    historyStack = ['root'];
+    historyIndex = 0;
+    levelCompleted = false;
+    createFolderCreated = false;
+    explorerMessage.innerHTML = '';
+    
+    updateContainerClass();
+    if(currentMode !== 'create') {
+      updateRouteDisplay();
+      createFolderControls.style.display = 'none';
+    } else {
+      routeDisplay.innerHTML = `📍 RUTA DESTINO: C:\\${createTargetPath}`;
+      missionTargetSpan.innerHTML = `✏️ Crea una carpeta llamada exactamente: <strong style="color:#ff66ff;">${createTargetName}</strong>`;
+      createFolderControls.style.display = 'flex';
+    }
+    
+    renderFolderView();
+    continueDiv.style.display = 'none';
+  }
+
+  function updateRouteDisplay() {
+    const routeNames = targetPathIds.map(id => fileSystem[id]?.name || id);
+    routeDisplay.textContent = 'C:\\' + routeNames.join(' → ');
+    missionTargetSpan.textContent = `Busca y abre: ${targetItemName}`;
+  }
+
+  function renderFolderView() {
+    if(!fileSystem) return;
+    const folder = fileSystem[currentFolderId];
+    const children = folder.children || [];
+    let html = '';
+    children.forEach(cid => {
+      const item = fileSystem[cid];
+      if(!item) return;
+      const icon = item.type==='file' ? '📄' : '📁';
+      html += `<div class="${item.type==='file'?'file-item':'folder-item'}" data-id="${item.id}">${icon} ${item.name}</div>`;
+    });
+    if(children.length===0) html = '<div style="grid-column:1/-1;">📭 VACÍO</div>';
+    folderContainer.innerHTML = html;
+    
+    const pathNames = [];
+    let id = currentFolderId;
+    while(id && fileSystem[id]) {
+      pathNames.unshift(fileSystem[id].name);
+      id = (id==='root')? null : Object.keys(fileSystem).find(k => fileSystem[k].children?.includes(id));
+    }
+    currentPathSpan.textContent = 'C:\\' + pathNames.join('\\');
+    
+    document.querySelectorAll('.folder-item, .file-item').forEach(el => {
+      el.addEventListener('click', () => enterItem(el.dataset.id));
+    });
+  }
+
+  function enterItem(itemId) {
+    if(!fileSystem[itemId] || levelCompleted) return;
+    if(currentMode === 'crono' && !cronoActive) return;
+    const item = fileSystem[itemId];
+    
+    if(currentMode !== 'create' && itemId === targetPathIds[targetPathIds.length-1]) {
+      levelCompleted = true;
+      if(currentMode === 'crono') {
+        clearInterval(cronoTimer); cronoActive = false;
+        score += 500 + cronoTimeLeft*10; updateUI();
+        explorerMessage.innerHTML = `✅ ¡PDF ENCONTRADO! +${500 + cronoTimeLeft*10} PTS`;
+        setTimeout(() => startQuiz(), 1000);
+      } else {
+        score += (currentMode==='volume1') ? 150+explorerLevel*30 : 200+explorerLevel*40;
+        updateUI();
+        explorerMessage.innerHTML = `✅ ¡ENCONTRASTE ${targetItemName}!`;
+        const maxLevel = (currentMode==='volume1') ? MAX_LEVEL_VOL1 : MAX_LEVEL_VOL2;
+        if(explorerLevel === maxLevel) {
+          if(currentMode === 'volume1') { currentMode = 'volume2'; explorerLevel = 1; continueDiv.style.display = 'block'; nextLevelBtn.textContent = '🔥 VOLUMEN 2'; }
+          else if(currentMode === 'volume2') { continueDiv.style.display = 'block'; nextLevelBtn.textContent = '⏱️ DESAFÍO CRONO'; }
+        } else { continueDiv.style.display = 'block'; nextLevelBtn.textContent = '⏩ SIGUIENTE NIVEL'; }
+      }
+      renderFolderView();
+      return;
+    }
+    
+    if(item.type === 'folder') {
+      if(historyIndex < historyStack.length-1) historyStack = historyStack.slice(0, historyIndex+1);
+      currentFolderId = itemId;
+      historyStack.push(itemId);
+      historyIndex++;
+      renderFolderView();
+    }
+  }
+
+  function startQuiz() {
+    currentMode = 'quiz'; updateContainerClass();
+    explorerSection.style.display = 'none'; roundsPanel.style.display = 'none';
+    
+    quizQuestions = [
+      { q: "¿Qué teclas usas para COPIAR un archivo?", options: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + P"], correct: 1 },
+      { q: "¿Qué teclas usas para PEGAR un archivo?", options: ["Ctrl + V", "Ctrl + C", "Ctrl + X", "Ctrl + Z"], correct: 0 },
+      { q: "¿Qué teclas usas para CORTAR un archivo?", options: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + A"], correct: 2 },
+      { q: "Para crear una NUEVA CARPETA con el teclado:", options: ["Ctrl + N", "Ctrl + Shift + N", "Ctrl + Alt + N", "Ctrl + F"], correct: 1 },
+      { q: "¿Qué hace Ctrl + Z?", options: ["Rehacer", "Deshacer", "Cortar", "Pegar"], correct: 1 },
+      { q: "Para SELECCIONAR TODO usas:", options: ["Ctrl + S", "Ctrl + A", "Ctrl + T", "Ctrl + E"], correct: 1 },
+      { q: "Para ELIMINAR un archivo permanentemente:", options: ["Supr", "Shift + Supr", "Ctrl + Supr", "Alt + Supr"], correct: 1 },
+      { q: "¿Qué tecla renombra un archivo seleccionado?", options: ["F1", "F2", "F5", "Enter"], correct: 1 },
+      { q: "Para ABRIR el administrador de archivos:", options: ["Win + E", "Win + R", "Win + D", "Win + F"], correct: 0 },
+      { q: "¿Qué combinación cierra una ventana activa?", options: ["Alt + F4", "Ctrl + W", "Ctrl + F4", "Todas son correctas"], correct: 3 }
+    ];
+    
+    currentQuizIndex = 0; quizScore = 0;
+    renderQuizQuestion();
+  }
+
+  function renderQuizQuestion() {
+    const q = quizQuestions[currentQuizIndex];
+    let html = `<div class="quiz-area"><h2>📋 PREGUNTA ${currentQuizIndex+1}/10</h2>`;
+    html += `<p style="font-size:1.6rem; margin:20px 0;">${q.q}</p>`;
+    q.options.forEach((opt, i) => html += `<div class="quiz-option" data-opt="${i}">${String.fromCharCode(65+i)}) ${opt}</div>`);
+    html += `<button class="btn" id="submitQuizBtn" style="margin-top:20px;">✔ RESPONDER</button><p id="quizFeedback"></p></div>`;
+    quizPanel.innerHTML = html; quizPanel.style.display = 'block'; selectedAnswer = null;
+    
+    document.querySelectorAll('.quiz-option').forEach(el => el.addEventListener('click', () => {
+      document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected'); selectedAnswer = parseInt(el.dataset.opt);
+    }));
+    
+    document.getElementById('submitQuizBtn').addEventListener('click', () => {
+      if(selectedAnswer === null) { document.getElementById('quizFeedback').innerText = 'Selecciona una respuesta'; return; }
+      if(selectedAnswer === q.correct) quizScore++;
+      currentQuizIndex++;
+      if(currentQuizIndex < 10) renderQuizQuestion();
+      else {
+        score += quizScore * 30; updateUI();
+        quizPanel.innerHTML = `<div class="quiz-area"><h2>📊 RESULTADO</h2><p style="font-size:2rem;">${quizScore}/10</p><p>+${quizScore*30} PTS</p></div>`;
+        setTimeout(() => { quizPanel.style.display = 'none'; startCreateMode(); }, 2000);
+      }
+    });
+  }
+
+  function startCreateMode() {
+    currentMode = 'create'; createLevel = 1;
+    createTargetName = `PROYECTO_${Math.random().toString(36).substring(2,6).toUpperCase()}`;
+    updateContainerClass();
+    explorerSection.style.display = 'block'; roundsPanel.style.display = 'none';
+    startVolumeLevel();
+    createFolderBtn.onclick = handleCreateFolder;
+    newFolderNameInput.onkeypress = e => { if(e.key==='Enter') handleCreateFolder(); };
+  }
+
+  function handleCreateFolder() {
+    if(levelCompleted || createFolderCreated) return;
+    const folderName = newFolderNameInput.value.trim();
+    if(!folderName) return;
+    if(currentFolderId === targetPathIds[0]) {
+      if(folderName === createTargetName) {
+        createFolderCreated = true; levelCompleted = true;
+        score += 100; updateUI();
+        explorerMessage.innerHTML = `✅ ¡CARPETA CREADA! +100 PTS`;
+        fileSystem[`created_${Date.now()}`] = { id: `created_${Date.now()}`, name: folderName, children: [], type: 'folder' };
+        renderFolderView();
+        if(createLevel === MAX_CREATE_LEVEL) setTimeout(() => startRunnerMode(), 1000);
+        else { continueDiv.style.display = 'block'; nextLevelBtn.textContent = '⏩ SIGUIENTE'; }
+      } else explorerMessage.innerHTML = `❌ Debe ser exactamente: ${createTargetName}`;
+      newFolderNameInput.value = '';
+    } else explorerMessage.innerHTML = `⚠️ Debes estar en: ${createTargetPath}`;
+  }
+
+  function startRunnerMode() {
+    currentMode = 'runner'; updateContainerClass();
+    explorerSection.style.display = 'none'; roundsPanel.style.display = 'none';
+    continueDiv.style.display = 'none';
+    
+    runnerPanel.innerHTML = `
+      <div class="runner-canvas-container">
+        <h2 style="color:#ffd700;">🐧 PINGÜINO CORREDOR 🐧</h2>
+        <canvas id="runnerCanvas" width="800" height="300"></canvas>
+        <p style="margin-top:15px;">Presiona ESPACIO o CLICK para saltar · ¡Cada vez más rápido!</p>
+        <p>Puntuación: <span id="runnerScore">0</span></p>
+        <button class="btn" id="finishRunnerBtn">🏁 TERMINAR Y VER CRÉDITOS</button>
+        <button class="btn" id="restartRunnerBtn">🔄 REINICIAR</button>
+      </div>
+    `;
+    runnerPanel.style.display = 'block';
+    
+    const canvas = document.getElementById('runnerCanvas');
+    const ctx = canvas.getContext('2d');
+    let gameOver = false;
+    let runnerScoreValue = 0;
+    let speed = 5;
+    
+    const penguin = { x: 80, y: 230, width: 40, height: 50, vy: 0, gravity: 0.6, jumpPower: -12, grounded: true };
+    const obstacles = [];
+    
+    function drawPenguin() {
+      ctx.fillStyle = '#2a2a4a';
+      ctx.fillRect(penguin.x, penguin.y, 40, 50);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(penguin.x+5, penguin.y+5, 10, 15);
+      ctx.fillRect(penguin.x+25, penguin.y+5, 10, 15);
+      ctx.fillStyle = '#ffaa00';
+      ctx.beginPath();
+      ctx.arc(penguin.x+20, penguin.y+20, 8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(penguin.x+10, penguin.y+35, 8, 15);
+      ctx.fillRect(penguin.x+22, penguin.y+35, 8, 15);
+      ctx.fillStyle = '#ff6600';
+      ctx.fillRect(penguin.x-5, penguin.y+20, 8, 15);
+      ctx.fillRect(penguin.x+37, penguin.y+20, 8, 15);
+    }
+    
+    function update() {
+      if(gameOver) return;
+      penguin.vy += penguin.gravity;
+      penguin.y += penguin.vy;
+      if(penguin.y >= 230) { penguin.y = 230; penguin.vy = 0; penguin.grounded = true; }
+      else penguin.grounded = false;
+      
+      if(Math.random() < 0.015) obstacles.push({ x: 800, width: 20, height: 30, y: 250 });
+      
+      for(let i=obstacles.length-1; i>=0; i--) {
+        obstacles[i].x -= speed;
+        if(obstacles[i].x + obstacles[i].width < 0) { obstacles.splice(i,1); runnerScoreValue += 10; speed += 0.05; }
+        else if(penguin.x < obstacles[i].x + obstacles[i].width && penguin.x + 40 > obstacles[i].x &&
+                penguin.y < obstacles[i].y + obstacles[i].height && penguin.y + 50 > obstacles[i].y) {
+          gameOver = true;
+        }
+      }
+      document.getElementById('runnerScore').textContent = runnerScoreValue;
+    }
+    
+    function draw() {
+      ctx.clearRect(0, 0, 800, 300);
+      ctx.fillStyle = '#3a2a5e';
+      ctx.fillRect(0, 260, 800, 5);
+      drawPenguin();
+      ctx.fillStyle = '#8b4513';
+      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+      if(gameOver) {
+        ctx.fillStyle = '#ff0000aa'; ctx.font = 'bold 30px Courier New';
+        ctx.fillText('GAME OVER', 280, 150);
+      }
+    }
+    
+    function gameLoop() {
+      update(); draw();
+      if(!gameOver) requestAnimationFrame(gameLoop);
+    }
+    
+    function jump() {
+      if(penguin.grounded && !gameOver) { penguin.vy = penguin.jumpPower; penguin.grounded = false; }
+    }
+    
+    document.addEventListener('keydown', e => { if(e.code === 'Space') { e.preventDefault(); jump(); }});
+    canvas.addEventListener('click', jump);
+    document.getElementById('restartRunnerBtn').addEventListener('click', () => {
+      gameOver = false; runnerScoreValue = 0; speed = 5;
+      penguin.y = 230; penguin.vy = 0; obstacles.length = 0;
+      gameLoop();
+    });
+    document.getElementById('finishRunnerBtn').addEventListener('click', () => {
+      runnerCompleted = true;
+      score += runnerScoreValue;
+      updateUI();
+      showCredits();
+    });
+    
+    gameLoop();
+  }
+
+  function showCredits() {
+    gameScreen.style.display = 'none';
+    creditsScreen.style.display = 'flex';
+    
+    creditNameFinal.textContent = player.fullName.toUpperCase();
+    creditGradeFinal.textContent = player.grade;
+    creditScoreFinal.textContent = score;
+    
+    finalPlayerName.textContent = player.fullName.toUpperCase();
+    finalPlayerGrade.textContent = player.grade;
+    finalPlayerScore.textContent = `PUNTUACIÓN TOTAL: ${score}`;
+    
+    // Generar líneas de código hacker
+    const codeLines = [];
+    for(let i=0; i<50; i++) {
+      let line = '';
+      for(let j=0; j<80; j++) {
+        line += String.fromCharCode(33 + Math.floor(Math.random() * 90));
+      }
+      codeLines.push(line);
+    }
+    hackerCodeLines.textContent = codeLines.join('\n');
+    
+    setTimeout(() => {
+      creditsScreen.style.display = 'none';
+      alert('🌟 ¡JUEGO COMPLETADO! Gracias por jugar en Colegio NSC.');
+      location.reload();
+    }, 36000);
+  }
+
+  nextLevelBtn.addEventListener('click', ()=>{
+    if(currentMode === 'volume2' && explorerLevel === MAX_LEVEL_VOL2) { currentMode = 'crono'; startVolumeLevel(); }
+    else if(currentMode === 'create') { createLevel++; createTargetName = `PROYECTO_${Math.random().toString(36).substring(2,6).toUpperCase()}`; startVolumeLevel(); }
+    else { explorerLevel++; startVolumeLevel(); }
+    continueDiv.style.display = 'none';
+  });
+
+  function startCronoTimer() {
+    cronoTimeLeft = 60; cronoActive = true; cronoTimerDisplay.style.display = 'block';
+    clearInterval(cronoTimer);
+    cronoTimer = setInterval(() => {
+      if(!cronoActive) return;
+      cronoTimeLeft--;
+      const mins = Math.floor(cronoTimeLeft/60), secs = cronoTimeLeft%60;
+      cronoTimerSpan.textContent = `⏱️ ${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+      if(cronoTimeLeft <= 0) { clearInterval(cronoTimer); cronoActive = false; explorerMessage.innerHTML = '⌛ ¡TIEMPO AGOTADO!'; setTimeout(() => startVolumeLevel(), 1500); }
+    }, 1000);
+  }
+
+  backBtn.addEventListener('click', ()=>{ if(historyIndex>0) { historyIndex--; currentFolderId = historyStack[historyIndex]; renderFolderView(); }});
+  forwardBtn.addEventListener('click', ()=>{ if(historyIndex<historyStack.length-1) { historyIndex++; currentFolderId = historyStack[historyIndex]; renderFolderView(); }});
+  resetExplorerBtn.addEventListener('click', ()=>{ currentFolderId = 'root'; historyStack = ['root']; historyIndex = 0; renderFolderView(); });
+
+})();
+</script>
+</body>
+</html>

@@ -423,7 +423,8 @@
     }
     round = r;
     const code = generateCode(6);
-    timeLeft = Math.max(8, 16 - r*2);
+    // MODIFICACIÓN: Ahora el tiempo siempre es 60 segundos (1 minuto)
+    timeLeft = 60; 
     currentRoundData = { code, roundNumber: r };
     roundActive = true;
     renderRoundPanel();
